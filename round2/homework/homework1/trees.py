@@ -2,6 +2,9 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from models import FunctionSelection
+
+
 @dataclass(init=True, repr=True)
 class DecisionNode:
     
@@ -66,7 +69,9 @@ class DecisionTree:
         return np.sum(self.predict(y_train) == y_test) / len(y_train)
     
     def predict(self, y_train):
-        return np.array([self.__predict_with_node(x, self.tree) for x in y_train])
+        return np.array([
+            self.__predict_with_node(x, self.tree) 
+            for x in y_train])
         
     def __find_best_split(self, X, y):
         best_h = float('inf')
@@ -74,7 +79,9 @@ class DecisionTree:
         best_index = None
         
         for i in range(len(X.T)):
-            for split in np.linspace(X.T[i].min(), X.T[i].max(), self.sepr)[1:-1]:
+            for split in np.linspace(X.T[i].min(), 
+                                     X.T[i].max(), 
+                                     self.sepr)[1:-1]:
                 mask = (X >= split)[:, i]
                 h1 = self.entropy(X[mask], y[mask])
                 h2 = self.entropy(X[~mask], y[~mask])
@@ -93,3 +100,58 @@ class DecisionTree:
         return (pred_f(x, node.right_node) 
                 if x[node.index] >= node.split_value
                else pred_f(x, node.left_node))
+
+
+@dataclass(init=True, repr=True)
+class RandomForest:
+    
+    n_trees: int = 10
+    max_depth: int = 6
+    leaf_count: int = 5
+    entropy: str = 'cross-entropy'
+    
+    def train(self, X, y):
+        
+        # generate bootstrap datasets
+        # Generate random indices of given dataset length 'n_trees' times
+        # and get data using them.
+        dataset_indices = [[np.random.choice(len(X), len(X))]
+                           for i in range(self.n_trees)]
+        bootstrap_datasets = [
+            (X[i], y[i]) for indices in dataset_indices
+            for i in indices
+        ]
+        
+        self.entropy_func = self.__get_entropy_cal_func(self.entropy)
+        self.trees = [
+            DecisionTree(self.entropy_func, 
+                         self.max_depth, 
+                         self.leaf_count).train(*dataset)
+            for dataset in bootstrap_datasets
+        ]
+        
+        return self
+        
+    def score(self, y_train, y_test):
+        return np.sum(self.predict(y_train) == y_test) / len(y_train)
+        
+    def predict(self, y_train):
+        trees_pred = self.trees_predict(y_train)
+        votes = [np.unique(pred, return_counts=True) for pred in trees_pred]
+        return np.array([value[np.argmax(vote)] for value, vote in votes])
+        
+    def trees_predict(self, y_train):
+        # Predictions individual trees made
+        pred = np.array([tree.predict(y_train) for tree in self.trees])
+        
+        # Array where for each y_train x 'n_trees' predictions.
+        # example for 4 trees
+        # [0, 1, 1, 1]
+        # [1, 1, 1, 0]
+        return [pred[:, i] for i in range(len(pred[0]))]
+        
+    def __get_entropy_cal_func(self, name):
+        return {
+            'cross-entropy': FunctionSelection.cross_entropy,
+            'gini': FunctionSelection.gini
+        }.get(name, None)

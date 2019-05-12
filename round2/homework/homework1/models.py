@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def grid_search(estimator, entropy, params, X, y, folds=5):
     fold_size = len(X) // folds
     
@@ -11,7 +12,7 @@ def grid_search(estimator, entropy, params, X, y, folds=5):
         x_test, test_y = y[mask], y[~mask]
         
         models = [
-            estimator(entropy, **param).train(x_train, x_test)
+            estimator(entropy=entropy, **param).train(x_train, x_test)
             for param in params
         ]
         
@@ -22,6 +23,7 @@ def grid_search(estimator, entropy, params, X, y, folds=5):
         
     models_and_scores.sort(key=lambda x:x[1], reverse=True)
     return models_and_scores[0]
+
 
 class FunctionSelection:
     
