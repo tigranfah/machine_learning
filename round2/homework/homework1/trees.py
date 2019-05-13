@@ -21,8 +21,8 @@ class DecisionNode:
 class DecisionTree:
     
     entropy: object
-    leaf_count: int
-    max_depth: int
+    max_depth: int = float('inf')
+    leaf_count: int = float('inf')
     sepr: int = 50
     
     def train(self, X, y):
@@ -106,8 +106,8 @@ class DecisionTree:
 class RandomForest:
     
     n_trees: int = 10
-    max_depth: int = 6
-    leaf_count: int = 5
+    max_depth: int = float('inf')
+    leaf_count: int = float('inf')
     entropy: str = 'cross-entropy'
     
     def train(self, X, y):
