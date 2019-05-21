@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import multivariate_normal
 
 from dataclasses import dataclass
 
@@ -105,3 +106,70 @@ class k_means:
 			nk[i] = self.mean_func(data[k_cluster_xs[i]])
 
 		return nk
+
+
+@dataclass(init=True, repr=True)
+class GaussiansMixtures:
+
+	n_clusters: int
+	# similarity measure function
+	simil_meas_func: object
+	similar_loss_value: float = 1000
+	n_similar_loss: int = 3
+	sample_nks: np.ndarray = None
+	sample_nk_limits: tuple = ()
+
+	def train(self, data):
+
+		if self.sample_nk_limits:
+			nk_limits = self.sample_nk_limints
+		else: nk_limits = data.min(), data.max()
+
+		self.nk = (self.sample_nks if not self.sample_nks is None
+				else np.random.uniform(*nk_limits, 
+									size=(self.n_clusters, 
+									data.shape[1])))
+
+		self.cov_matrix_2 = [np.eye(data.shape[1])] * self.n_clusters
+
+		self.w = np.zeros((len(data), self.n_clusters))
+
+		self.pi = np.array([1 / self.n_clusters] * self.n_clusters)
+
+		self.log_likelihoods = []
+
+		self.EM(data)
+
+		return self
+
+	def predict(self, data):
+		return self.__expectation(data)
+
+	def EM(self, data):
+
+		for i in range(5):
+			print('iter')
+
+			self.w[:] = self.__expectation(data)
+			self.__maximization(data)
+
+
+	def __expectation(self, data):
+		w = np.empty((len(data), self.n_clusters))
+		for k in range(self.n_clusters):
+			w[:, k] = self.pi[k] * multivariate_normal.pdf(data, 
+													self.nk[k],
+													self.cov_matrix_2[k])
+		return w
+
+	def __maximization(self, data):
+		for k in range(self.n_clusters):
+
+			w_sum = self.w[:, k].sum()
+			self.pi[k] = w_sum / len(data)
+			self.nk[k] = (self.w[:, k] * data.T).sum(axis=1) / w_sum
+
+			data_nk_diff = np.array([x - self.nk[k]
+									for x in data]) ** 2
+			print((self.w[:, k] * data_nk_diff))
+			self.cov_matrix_2[k] = (self.w[:, k] * data_nk_diff).sum(0) / w_sum
