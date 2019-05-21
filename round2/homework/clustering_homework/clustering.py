@@ -145,14 +145,17 @@ class GaussiansMixtures:
 	def predict(self, data):
 		return self.__expectation(data)
 
+	def loss(self, data):
+		return np.sum(np.log1p(self.__expectation(data)), axis=1).sum()
+
 	def EM(self, data):
 
 		for i in range(5):
-			print('iter')
 
 			self.w[:] = self.__expectation(data)
 			self.__maximization(data)
 
+			self.log_likelihoods.append(self.loss(data))
 
 	def __expectation(self, data):
 		w = np.empty((len(data), self.n_clusters))
@@ -160,6 +163,7 @@ class GaussiansMixtures:
 			w[:, k] = self.pi[k] * multivariate_normal.pdf(data, 
 													self.nk[k],
 													self.cov_matrix_2[k])
+
 		return w
 
 	def __maximization(self, data):
@@ -167,9 +171,11 @@ class GaussiansMixtures:
 
 			w_sum = self.w[:, k].sum()
 			self.pi[k] = w_sum / len(data)
+
 			self.nk[k] = (self.w[:, k] * data.T).sum(axis=1) / w_sum
 
-			data_nk_diff = np.array([x - self.nk[k]
-									for x in data]) ** 2
-			print((self.w[:, k] * data_nk_diff))
-			self.cov_matrix_2[k] = (self.w[:, k] * data_nk_diff).sum(0) / w_sum
+			new_cov_numerator = np.array([
+								self.w[i, k] * (x - self.nk[k]) ** 2
+								for i, x in enumerate(data)])
+
+			self.cov_matrix_2[k] = (new_cov_numerator).sum(0) / w_sum
