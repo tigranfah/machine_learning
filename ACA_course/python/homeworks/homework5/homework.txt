@@ -1,0 +1,9 @@
+https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/
+
+https://leetcode.com/problems/keyboard-row/
+
+https://leetcode.com/problems/transpose-matrix/
+
+https://leetcode.com/problems/reshape-the-matrix/
+
+https://leetcode.com/problems/battleships-in-a-board/
