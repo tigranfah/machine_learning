@@ -2,3 +2,5 @@
 __pycache__
 *.swp
 ACA_course/machine_learning/slides/
+
+**.ipynb_checkpoints/
