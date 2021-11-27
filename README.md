@@ -1,6 +1,5 @@
-# machine_learning_course
+# machine_learning
 
-This is the repo about machine learning, and course.
-Here you will find my progress, implementation of different ML models as homeworks etc.
+This is a repo about my progress in learning Machine Learning and courses.
 
-The code can be found in each round folder under homework or code directory.
+The repo contains code, homework assignments, books and theory, that can be found in directories.
