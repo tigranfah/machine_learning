@@ -38,9 +38,10 @@ class Matrix:
 		if x2 - x1 <= 0 or y2 - y1 <= 0 or y1 < 0 or x1 < 0 or x2 < 0 or y2 < 0:
 			raise Exception(f"Can get submatrix with {x1}, {y1}, {x2}, {y2}.")
 		sub_array = []
-		for j in range(y2 - y1):
-			for i in range(x2 - x1):
-				sub_array.append(self[i + x1, j + y1])
+		for i in range(x2 - x1):
+			sub_array.append([])
+			for j in range(y2 - y1):
+				sub_array[-1].append(self[i + x1, j + y1])
 
 		return sub_array
 
@@ -134,6 +135,9 @@ class Matrix:
 		s += '\n------------------------\n'
 		return s
 		#return "\n".join([" ".join(str(i) for i in row) for row in self._elements])
+
+	def summation(self):
+		return sum([sum(elems) for elems in self._elements])
 
 	@property
 	def shape(self):
