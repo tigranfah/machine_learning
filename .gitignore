@@ -1,6 +1,7 @@
 **.DS_Store
 **__pycache__
 **.swp
+datasets
 ACA_course/machine_learning/slides/
 
 **.ipynb_checkpoints/
